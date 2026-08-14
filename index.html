@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Eclatique マーケティングダッシュボード</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #fbf7f4;
+    --card: #ffffff;
+    --ink: #2c2320;
+    --sub: #7a6f68;
+    --line: #e9e0d9;
+    --accent: #b98a6a;
+    --accent-dark: #8a5f45;
+    --accent-soft: #f3e4d8;
+    --good: #7a8f6a;
+    --warn: #c0785a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    line-height: 1.6;
+    padding: 20px 16px 48px;
+  }
+  h1 { font-size: 20px; margin: 0 0 4px; letter-spacing: 0.02em; }
+  h2 { font-size: 15px; margin: 0 0 14px; color: var(--accent-dark); letter-spacing: 0.03em; }
+  .header { margin-bottom: 22px; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 8px; }
+  .sub { color: var(--sub); font-size: 13px; }
+  .updated { font-size: 12px; color: var(--sub); }
+  section { margin-bottom: 28px; }
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 980px) { .grid-3 { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .kpi-title { font-size: 13px; color: var(--sub); margin-bottom: 6px; }
+  .kpi-value { font-size: 24px; font-weight: 600; }
+  .kpi-target { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .bar-bg { height: 8px; border-radius: 6px; background: var(--accent-soft); margin-top: 10px; overflow: hidden; }
+  .bar-fill { height: 100%; background: var(--accent); border-radius: 6px; transition: width .4s ease; }
+  .funnel { display: flex; align-items: stretch; gap: 6px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .funnel-step { flex: 1; min-width: 130px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: center; position: relative; }
+  .funnel-label { font-size: 11px; color: var(--sub); margin-bottom: 8px; }
+  .funnel-value { font-size: 22px; font-weight: 700; color: var(--accent-dark); }
+  .funnel-sub { font-size: 10px; color: var(--sub); margin-top: 4px; }
+  .funnel-arrow { display: flex; align-items: center; justify-content: center; color: var(--sub); font-size: 18px; padding: 0 2px; }
+  .rate-row { display: flex; gap: 10px; margin-top: 10px; font-size: 12px; color: var(--sub); flex-wrap: wrap; }
+  .rate-chip { background: var(--accent-soft); color: var(--accent-dark); padding: 4px 10px; border-radius: 999px; }
+  .channel-card h3 { font-size: 15px; margin: 0 0 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .tag { font-size: 10px; padding: 2px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-dark); font-weight: 600; }
+  .tag.manual { background: #eef0e6; color: #5c6b47; }
+  .stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 6px 0; border-bottom: 1px dashed var(--line); gap: 8px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { color: var(--sub); }
+  .stat-val { font-weight: 600; text-align: right; }
+  .toggle-row { display: flex; gap: 6px; margin-bottom: 12px; }
+  .toggle-btn { border: 1px solid var(--line); background: var(--card); color: var(--sub); font-size: 12px; padding: 4px 10px; border-radius: 999px; cursor: pointer; }
+  .toggle-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  form.manual-form { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+  form.manual-form label { font-size: 11px; color: var(--sub); display: block; margin-bottom: 3px; }
+  form.manual-form input, form.manual-form textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; font-family: inherit; }
+  form.manual-form .full { grid-column: 1 / -1; }
+  .save-btn { grid-column: 1 / -1; background: var(--accent); color: white; border: none; border-radius: 8px; padding: 8px; font-size: 13px; cursor: pointer; margin-top: 4px; }
+  .save-btn:hover { background: var(--accent-dark); }
+  .chart-wrap { height: 160px; margin-top: 14px; }
+  .empty-note { font-size: 12px; color: var(--sub); padding: 10px 0; }
+  table.log-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.log-table th, table.log-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  table.log-table th { color: var(--sub); font-weight: 500; }
+  .del-btn { background: none; border: none; color: var(--warn); cursor: pointer; font-size: 12px; }
+  .footnote { font-size: 11px; color: var(--sub); border-top: 1px solid var(--line); padding-top: 14px; margin-top: 26px; }
+  .footnote p { margin: 4px 0; }
+  .table-scroll { overflow-x: auto; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <h1>Eclatique マーケティングダッシュボード</h1>
+      <div class="sub">Instagram ／ HPブログ(Wix) ／ Podcast ／ 無料診断 を横断で可視化</div>
+    </div>
+    <div class="updated" id="updatedAt"></div>
+  </div>
+
+  <section>
+    <h2>① KPI進捗</h2>
+    <div class="grid grid-2" id="kpiGrid"></div>
+  </section>
+
+  <section>
+    <h2>② ファネル（認知 → 流入 → 診断 → 面談 → 申込）</h2>
+    <div id="funnelWrap"></div>
+  </section>
+
+  <section>
+    <h2>③ チャネル別詳細</h2>
+    <div class="grid grid-3">
+      <div class="card channel-card" id="igCard">
+        <h3>Instagram <span class="tag">自動取得（週次）</span></h3>
+        <div id="igStats"></div>
+        <div class="chart-wrap"><canvas id="igChart"></canvas></div>
+        <div class="empty-note">フォロワー数は @eclatique_shiho のプロフィールを週次で自動チェックして記録します。リール単位の再生回数などはNotionの「Reels」データベースから自動取得します（下のセクション参照）。ここではインサイトの「概要」画面（7日間）に出ている数字をそのまま入力してください。</div>
+        <form class="manual-form" id="igForm">
+          <div><label>閲覧数（7日間）</label><input type="number" name="views"></div>
+          <div><label>インタラクション</label><input type="number" name="interactions"></div>
+          <div><label>プロフィールへのアクセス</label><input type="number" name="profile"></div>
+          <div><label>自己紹介リンクのタップ数</label><input type="number" name="linktaps"></div>
+          <div class="full"><label>メモ（気づき・反響など）</label><textarea name="note" rows="2"></textarea></div>
+          <button type="submit" class="save-btn">記録を追加</button>
+        </form>
+      </div>
+
+      <div class="card channel-card" id="hpCard">
+        <h3>HPブログ <span class="tag">Wix自動取得</span></h3>
+        <div class="toggle-row" id="hpToggle">
+          <button class="toggle-btn" data-days="7">7日</button>
+          <button class="toggle-btn active" data-days="30">30日</button>
+          <button class="toggle-btn" data-days="60">60日</button>
+        </div>
+        <div id="hpStats"></div>
+        <div class="chart-wrap"><canvas id="hpChart"></canvas></div>
+      </div>
+
+      <div class="card channel-card" id="podCard">
+        <h3>Podcast <span class="tag">自動取得（週次）</span></h3>
+        <div id="podStats"></div>
+        <div class="chart-wrap"><canvas id="podChart"></canvas></div>
+        <div class="empty-note">Spotify for Creators（今日のわたしになる前に）を週次で自動チェックして記録します。エピソード単位の内訳は下のセクション参照。ここでは気づき・エンゲージメントのメモだけ残してください。</div>
+        <form class="manual-form" id="podForm">
+          <div class="full"><label>メモ（気づき・エンゲージメント等）</label><textarea name="note" rows="2"></textarea></div>
+          <button type="submit" class="save-btn">メモを追加</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>④ リール実績 <span class="tag">Notionから自動取得</span></h2>
+    <div class="card">
+      <div class="grid grid-3" id="reelsSummary"></div>
+      <div class="table-scroll">
+        <table class="log-table" id="reelsTable">
+          <thead><tr><th>投稿日</th><th>リール名</th><th>再生回数</th><th>リーチ</th><th>いいね</th><th>コメント</th><th>保存</th><th>シェア</th><th>平均視聴時間</th><th>スキップ率</th></tr></thead>
+          <tbody id="reelsTbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-note" id="reelsEmpty" style="display:none;">Notionの「Reels」データベースにまだ数字が入っていません。各リールのページに、アプリの「インサイトを見る」で確認した数字を入力してください。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>⑤ Podcastエピソード実績 <span class="tag">Spotify for Creatorsから自動取得</span></h2>
+    <div class="card">
+      <div class="table-scroll">
+        <table class="log-table" id="podEpisodesTable">
+          <thead><tr><th>タイトル</th><th>ステータス</th><th>公開日</th><th>再生数</th><th>オーディエンス</th></tr></thead>
+          <tbody id="podEpisodesTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>⑥ 手入力の記録一覧</h2>
+    <div class="card" id="logCardWrap">
+      <div class="table-scroll">
+        <table class="log-table" id="logTable">
+          <thead><tr><th>日付・時刻</th><th>チャネル</th><th>数値</th><th>メモ</th><th></th></tr></thead>
+          <tbody id="logTbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-note" id="logEmpty" style="display:none;">まだ記録がありません。上のフォームから入力してください。</div>
+    </div>
+  </section>
+
+  <div class="footnote">
+    <p><strong>データソースについて</strong></p>
+    <p>・HPブログの数値は Wix Analytics API から自動取得しています。「ユニーク訪問者数」は同じ人が期間内に何度訪れても1人として数える重複なしの人数、「セッション数」は訪問（滞在）の回数そのもの（同じ人が複数回来れば複数カウント）です。Wix側の仕様上、直近62日分のみ保持されます。</p>
+    <p>・無料診断／成約数は Google Drive 内のスプレッドシート（00_未顧客DB・00_既存顧客DB）を自動集計しています。しほさん自身のテスト送信（お名前に「府川」を含む行、自己アドレスからの送信）は集計から除外しています。</p>
+    <p>・Instagramのフォロワー数は @eclatique_shiho のプロフィールページを週次で自動チェックして記録しています。リール単位の再生回数・リーチ・平均視聴時間などは、Notionの「Reels」データベースに入力した数字を自動集計しています（数字自体はアプリの「インサイトを見る」を開いて確認し、Notion側で入力する必要があります）。プロフィール全体の閲覧数・インタラクションなどは自動連携ツールが未接続のため手入力です（手入力値はこのブラウザに保存され、別端末では引き継がれません）。</p>
+    <p>・Podcast（今日のわたしになる前に）は Spotify for Creators を週次で自動チェックし、全期間の再生数・フォロワー数・エピソード別の再生数とオーディエンス数を記録しています。</p>
+    <p>・このページはスマホなどブラウザからも見られるよう、①HPブログ ②無料診断・面談・成約 ③リール実績のデータを1日1回自動で取得し直し、静的なページとして再生成・公開しています（GitHub Pages）。Instagramフォロワー数・Podcastの全期間再生数は現時点では週次の別工程で更新されるまで前回値のままです。</p>
+    <p>・年末目標（〜2026年12月末）：Instagramフォロワー500人／スタンダードプラン1件成約（¥300,000）</p>
+  </div>
+
+<script>
+// ============================================================
+// このブロックはスケジュールタスクが毎日書き換える「静的スナップショット」です。
+// Cowork環境の window.cowork には依存せず、あらかじめ取得しておいた
+// 数値だけを使って描画します（GitHub Pages 等の静的ホスティングで動作させるため）。
+// ============================================================
+const LAST_UPDATED = "2026-08-14T06:25:04Z";
+
+const HP_METRICS = {
+  7: {
+    sessions: 6, visitors: 4, forms: 0, contact: 0,
+    series: [{"date":"2026-08-08","value":2},{"date":"2026-08-09","value":0},{"date":"2026-08-10","value":0},{"date":"2026-08-11","value":1},{"date":"2026-08-12","value":3},{"date":"2026-08-13","value":0}]
+  },
+  30: {
+    sessions: 56, visitors: 52, forms: 0, contact: 0,
+    series: [{"date":"2026-07-16","value":10},{"date":"2026-07-17","value":2},{"date":"2026-07-18","value":0},{"date":"2026-07-19","value":1},{"date":"2026-07-20","value":0},{"date":"2026-07-21","value":5},{"date":"2026-07-22","value":4},{"date":"2026-07-23","value":2},{"date":"2026-07-24","value":2},{"date":"2026-07-25","value":2},{"date":"2026-07-26","value":0},{"date":"2026-07-27","value":1},{"date":"2026-07-28","value":0},{"date":"2026-07-29","value":2},{"date":"2026-07-30","value":1},{"date":"2026-07-31","value":6},{"date":"2026-08-01","value":0},{"date":"2026-08-02","value":0},{"date":"2026-08-03","value":1},{"date":"2026-08-04","value":2},{"date":"2026-08-05","value":8},{"date":"2026-08-06","value":1},{"date":"2026-08-07","value":0},{"date":"2026-08-08","value":2},{"date":"2026-08-09","value":0},{"date":"2026-08-10","value":0},{"date":"2026-08-11","value":1},{"date":"2026-08-12","value":3},{"date":"2026-08-13","value":0}]
+  },
+  60: {
+    sessions: 87, visitors: 78, forms: 0, contact: 0,
+    series: [{"date":"2026-06-16","value":0},{"date":"2026-06-17","value":1},{"date":"2026-06-18","value":0},{"date":"2026-06-19","value":1},{"date":"2026-06-20","value":2},{"date":"2026-06-21","value":0},{"date":"2026-06-22","value":1},{"date":"2026-06-23","value":0},{"date":"2026-06-24","value":0},{"date":"2026-06-25","value":0},{"date":"2026-06-26","value":0},{"date":"2026-06-27","value":1},{"date":"2026-06-28","value":1},{"date":"2026-06-29","value":0},{"date":"2026-06-30","value":0},{"date":"2026-07-01","value":0},{"date":"2026-07-02","value":4},{"date":"2026-07-03","value":3},{"date":"2026-07-04","value":1},{"date":"2026-07-05","value":2},{"date":"2026-07-06","value":1},{"date":"2026-07-07","value":1},{"date":"2026-07-08","value":0},{"date":"2026-07-09","value":0},{"date":"2026-07-10","value":2},{"date":"2026-07-11","value":3},{"date":"2026-07-12","value":2},{"date":"2026-07-13","value":2},{"date":"2026-07-14","value":3},{"date":"2026-07-15","value":0},{"date":"2026-07-16","value":10},{"date":"2026-07-17","value":2},{"date":"2026-07-18","value":0},{"date":"2026-07-19","value":1},{"date":"2026-07-20","value":0},{"date":"2026-07-21","value":5},{"date":"2026-07-22","value":4},{"date":"2026-07-23","value":2},{"date":"2026-07-24","value":2},{"date":"2026-07-25","value":2},{"date":"2026-07-26","value":0},{"date":"2026-07-27","value":1},{"date":"2026-07-28","value":0},{"date":"2026-07-29","value":2},{"date":"2026-07-30","value":1},{"date":"2026-07-31","value":6},{"date":"2026-08-01","value":0},{"date":"2026-08-02","value":0},{"date":"2026-08-03","value":1},{"date":"2026-08-04","value":2},{"date":"2026-08-05","value":8},{"date":"2026-08-06","value":1},{"date":"2026-08-07","value":0},{"date":"2026-08-08","value":2},{"date":"2026-08-09","value":0},{"date":"2026-08-10","value":0},{"date":"2026-08-11","value":1},{"date":"2026-08-12","value":3},{"date":"2026-08-13","value":0}]
+  }
+};
+
+// 無料診断→面談→申込のファネル（2026-05-01以降・しほさん自身のテスト送信を除く）
+const VISION_STATS = { newCycleSubmissions: 1, meetingsHeld: 0, applications: 0 };
+// スタンダード/ライト/プレミアム 成約件数（しほさん自身のテスト送信を除く）
+const CLIENT_STATS = { light: 0, standard: 0, premium: 0 };
+
+const REELS = [
+  { name: "診断活かせてない", reel_date: "2026-08-11 11:00:00Z", plays: null, reach: null, likes: null, comments: null, saves: null, shares: null, avg_watch: null, skip_rate: null },
+  { name: "仕事服むずい問題", reel_date: "2026-08-01 12:30:00Z", plays: 340, reach: 249, likes: 5, comments: 0, saves: 0, shares: 0, avg_watch: 8, skip_rate: 66.9 },
+  { name: "未来の先取り", reel_date: "2026-07-20 10:00:00Z", plays: 921, reach: 617, likes: 12, comments: 2, saves: 0, shares: 1, avg_watch: 13, skip_rate: 56.2 }
+];
+
+// Auto-scraped Instagram follower history (@eclatique_shiho). Updated weekly (separate process).
+const IG_HISTORY = [
+  { date: '2026-08-08', followers: 96, posts: 12, source: 'auto' }
+];
+
+// Auto-scraped Spotify for Creators data (「今日のわたしになる前に」). Updated weekly (separate process).
+const PODCAST_HISTORY = [
+  { date: '2026-08-08', totalPlays: 97, followers: 0, source: 'auto' }
+];
+const PODCAST_EPISODES = [
+  { title: '#1 アラサーこそ人生の棚卸し', status: '公開', date: '2026-01-12', plays: 24, audience: 22 },
+  { title: '#2 イメコンは"オワコン"？', status: '下書き', date: '2026-01-17', plays: 19, audience: 18 },
+  { title: '#3 人生イベントの80%は35歳までに完了する', status: '下書き', date: '2026-01-23', plays: 15, audience: 14 },
+  { title: '#4 人生の土台は体力', status: '下書き', date: '2026-02-03', plays: 15, audience: 15 },
+  { title: '#5_1万円の価値は変わっていく', status: '下書き', date: '2026-02-23', plays: 24, audience: 23 }
+];
+// ============================================================
+// ここから下は表示ロジック（スケジュールタスクは編集しません）
+// ============================================================
+
+const LOG_KEY = 'eclatique_manual_log_v1';
+const YEAR_END_DEADLINE = new Date(2026, 11, 31); // 2026-12-31
+
+let hpChartObj = null, igChartObj = null, podChartObj = null;
+
+function fmt(n){ return (n===undefined||n===null||isNaN(n)) ? '–' : n.toLocaleString('ja-JP'); }
+
+// ---------- Manual log ----------
+function loadLog(){
+  try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveLog(log){ localStorage.setItem(LOG_KEY, JSON.stringify(log)); }
+function addLogEntry(channel, metrics, note){
+  const log = loadLog();
+  log.push({ id: Date.now(), date: new Date().toISOString(), channel, metrics, note: note || '' });
+  saveLog(log);
+  return log;
+}
+function formatDateTime(iso){
+  if (!iso) return '–';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return d.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function formatReelDate(s){
+  if (!s) return '';
+  const d = new Date(String(s).trim().replace(' ', 'T'));
+  if (isNaN(d.getTime())) return s;
+  return d.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+function deleteLogEntry(id){
+  const log = loadLog().filter(e => e.id !== id);
+  saveLog(log);
+  return log;
+}
+function latestEntry(log, channel){
+  const filtered = log.filter(e => e.channel === channel);
+  return filtered.length ? filtered[filtered.length - 1] : null;
+}
+
+// ---------- Rendering ----------
+function renderKPI(){
+  const el = document.getElementById('kpiGrid');
+  const c = CLIENT_STATS;
+  const today = new Date();
+  const daysLeft = Math.ceil((YEAR_END_DEADLINE - today) / 86400000);
+  const igLatest = IG_HISTORY.length ? IG_HISTORY[IG_HISTORY.length - 1].followers : 0;
+  const deadlineNote = daysLeft >= 0 ? `残り${daysLeft}日（〜2026/12/31）` : '期限超過';
+
+  function kpiCard(title, value, target, extra){
+    const pct = target > 0 ? Math.min(100, Math.round(value / target * 100)) : 0;
+    return `<div class="card">
+      <div class="kpi-title">${title}</div>
+      <div class="kpi-value">${fmt(value)} <span style="font-size:14px;color:var(--sub);">/ ${fmt(target)}</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;"></div></div>
+      <div class="kpi-target">${extra || ''}</div>
+    </div>`;
+  }
+
+  el.innerHTML =
+    kpiCard('年末目標：Instagramフォロワー', igLatest, 500, deadlineNote) +
+    kpiCard('年末目標：スタンダード成約（¥300,000）', c.standard, 1, deadlineNote);
+}
+
+function renderFunnel(){
+  const wrap = document.getElementById('funnelWrap');
+  const vs = VISION_STATS;
+  const igFollowers = IG_HISTORY.length ? IG_HISTORY[IG_HISTORY.length - 1].followers : 0;
+  const hpVisitors = HP_METRICS[30] ? HP_METRICS[30].visitors : 0;
+  const steps = [
+    { label: '認知（Instagram）', value: igFollowers, sub: 'フォロワー数・自動取得' },
+    { label: 'HPブログ流入', value: hpVisitors, sub: '直近30日ユニーク訪問者' },
+    { label: '無料診断提出', value: vs.newCycleSubmissions, sub: '2026/5〜・テスト除く' },
+    { label: '個別面談実施', value: vs.meetingsHeld, sub: '' },
+    { label: 'FBP申込', value: vs.applications, sub: '' }
+  ];
+  let html = '<div class="funnel">';
+  steps.forEach((s, i) => {
+    html += `<div class="funnel-step">
+      <div class="funnel-label">${s.label}</div>
+      <div class="funnel-value">${fmt(s.value)}</div>
+      <div class="funnel-sub">${s.sub}</div>
+    </div>`;
+    if (i < steps.length - 1) html += '<div class="funnel-arrow">→</div>';
+  });
+  html += '</div>';
+
+  const rate = (a,b) => (a && b) ? Math.round(b/a*100) + '%' : '–';
+  html += `<div class="rate-row">
+    <span class="rate-chip">診断→面談 転換率: ${rate(vs.newCycleSubmissions, vs.meetingsHeld)}</span>
+    <span class="rate-chip">面談→申込 転換率: ${rate(vs.meetingsHeld, vs.applications)}</span>
+  </div>`;
+  wrap.innerHTML = html;
+}
+
+function renderIg(){
+  const log = loadLog();
+  const latest = latestEntry(log, 'instagram');
+  const igLatestAuto = IG_HISTORY.length ? IG_HISTORY[IG_HISTORY.length - 1] : null;
+  const el = document.getElementById('igStats');
+  let html = '';
+  if (igLatestAuto) {
+    html += `<div class="stat-row"><span class="stat-label">フォロワー数（自動・${igLatestAuto.date}）</span><span class="stat-val">${fmt(igLatestAuto.followers)}</span></div>`;
+  }
+  if (latest) {
+    html += `
+      <div class="stat-row"><span class="stat-label">閲覧数（7日間）</span><span class="stat-val">${fmt(latest.metrics.views)}</span></div>
+      <div class="stat-row"><span class="stat-label">インタラクション</span><span class="stat-val">${fmt(latest.metrics.interactions)}</span></div>
+      <div class="stat-row"><span class="stat-label">プロフィールへのアクセス</span><span class="stat-val">${fmt(latest.metrics.profile)}</span></div>
+      <div class="stat-row"><span class="stat-label">自己紹介リンクのタップ数</span><span class="stat-val">${fmt(latest.metrics.linktaps)}</span></div>
+      <div class="stat-row"><span class="stat-label">最終手入力日時</span><span class="stat-val">${formatDateTime(latest.date)}</span></div>`;
+  } else {
+    html += '<div class="empty-note">閲覧数などはまだ記録がありません。下のフォームから入力してください。</div>';
+  }
+  el.innerHTML = html;
+
+  const canvas = document.getElementById('igChart');
+  if (IG_HISTORY.length < 2) {
+    canvas.style.display = 'none';
+    let note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 'empty-note chart-empty-note';
+      note.textContent = '自動記録が2件以上たまるとフォロワー推移グラフが表示されます。';
+      canvas.parentElement.appendChild(note);
+    }
+  } else {
+    canvas.style.display = 'block';
+    const note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (note) note.remove();
+    const labels = IG_HISTORY.map(e => e.date);
+    const values = IG_HISTORY.map(e => e.followers);
+    if (igChartObj) igChartObj.destroy();
+    igChartObj = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+function renderPod(){
+  const el = document.getElementById('podStats');
+  const podLatestAuto = PODCAST_HISTORY.length ? PODCAST_HISTORY[PODCAST_HISTORY.length - 1] : null;
+  const log = loadLog();
+  const latestNote = latestEntry(log, 'podcast');
+  let html = '';
+  if (podLatestAuto) {
+    html += `
+      <div class="stat-row"><span class="stat-label">全期間 再生数・DL数（自動・${podLatestAuto.date}）</span><span class="stat-val">${fmt(podLatestAuto.totalPlays)}</span></div>
+      <div class="stat-row"><span class="stat-label">フォロワー数</span><span class="stat-val">${fmt(podLatestAuto.followers)}</span></div>`;
+  } else {
+    html += '<div class="empty-note">自動記録がまだありません。</div>';
+  }
+  if (latestNote) {
+    html += `<div class="stat-row"><span class="stat-label">最終メモ日時</span><span class="stat-val">${formatDateTime(latestNote.date)}</span></div>`;
+  }
+  el.innerHTML = html;
+
+  const canvas = document.getElementById('podChart');
+  if (PODCAST_HISTORY.length < 2) {
+    canvas.style.display = 'none';
+    let note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 'empty-note chart-empty-note';
+      note.textContent = '自動記録が2件以上たまると再生数の推移グラフが表示されます。';
+      canvas.parentElement.appendChild(note);
+    }
+  } else {
+    canvas.style.display = 'block';
+    const note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (note) note.remove();
+    const labels = PODCAST_HISTORY.map(e => e.date);
+    const values = PODCAST_HISTORY.map(e => e.totalPlays);
+    if (podChartObj) podChartObj.destroy();
+    podChartObj = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets: [{ label: '全期間 再生数・DL数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+function renderPodEpisodes(){
+  const tbody = document.getElementById('podEpisodesTbody');
+  tbody.innerHTML = PODCAST_EPISODES.map(e => `<tr>
+    <td>${e.title}</td>
+    <td>${e.status}</td>
+    <td>${e.date}</td>
+    <td>${fmt(e.plays)}</td>
+    <td>${fmt(e.audience)}</td>
+  </tr>`).join('');
+}
+
+function renderReels(){
+  const rows = REELS;
+  const summaryEl = document.getElementById('reelsSummary');
+  const tbody = document.getElementById('reelsTbody');
+  const emptyNote = document.getElementById('reelsEmpty');
+
+  const withPlays = rows.filter(r => r.plays !== null && r.plays !== undefined);
+  const totalPlays = withPlays.reduce((s, r) => s + Number(r.plays || 0), 0);
+  const avgWatchVals = rows.filter(r => r.avg_watch !== null && r.avg_watch !== undefined).map(r => Number(r.avg_watch));
+  const avgWatch = avgWatchVals.length ? (avgWatchVals.reduce((a,b)=>a+b,0) / avgWatchVals.length) : null;
+  const skipVals = rows.filter(r => r.skip_rate !== null && r.skip_rate !== undefined).map(r => Number(r.skip_rate));
+  const avgSkip = skipVals.length ? (skipVals.reduce((a,b)=>a+b,0) / skipVals.length) : null;
+
+  function miniCard(title, value){
+    return `<div class="card"><div class="kpi-title">${title}</div><div class="kpi-value" style="font-size:18px;">${value}</div></div>`;
+  }
+  summaryEl.innerHTML =
+    miniCard('投稿数（DB登録）', rows.length) +
+    miniCard('合計再生回数', withPlays.length ? fmt(totalPlays) : '未入力') +
+    miniCard('平均視聴時間 / スキップ率', (avgWatch !== null ? avgWatch.toFixed(1) + '秒' : '–') + ' / ' + (avgSkip !== null ? avgSkip.toFixed(0) + '%' : '–'));
+
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  emptyNote.style.display = 'none';
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td>${formatReelDate(r.reel_date)}</td>
+    <td>${r.name || ''}</td>
+    <td>${r.plays !== null && r.plays !== undefined ? fmt(r.plays) : '–'}</td>
+    <td>${r.reach !== null && r.reach !== undefined ? fmt(r.reach) : '–'}</td>
+    <td>${r.likes !== null && r.likes !== undefined ? fmt(r.likes) : '–'}</td>
+    <td>${r.comments !== null && r.comments !== undefined ? fmt(r.comments) : '–'}</td>
+    <td>${r.saves !== null && r.saves !== undefined ? fmt(r.saves) : '–'}</td>
+    <td>${r.shares !== null && r.shares !== undefined ? fmt(r.shares) : '–'}</td>
+    <td>${r.avg_watch !== null && r.avg_watch !== undefined ? r.avg_watch + '秒' : '–'}</td>
+    <td>${r.skip_rate !== null && r.skip_rate !== undefined ? r.skip_rate + '%' : '–'}</td>
+  </tr>`).join('');
+}
+
+function renderLogTable(){
+  const log = loadLog().slice().sort((a,b) => b.id - a.id);
+  const tbody = document.getElementById('logTbody');
+  const emptyNote = document.getElementById('logEmpty');
+  if (!log.length) {
+    tbody.innerHTML = '';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  emptyNote.style.display = 'none';
+  tbody.innerHTML = log.map(e => {
+    const metricsStr = Object.entries(e.metrics).filter(([k,v]) => v !== '' && v !== undefined).map(([k,v]) => `${k}: ${v}`).join(' / ');
+    return `<tr>
+      <td>${formatDateTime(e.date)}</td>
+      <td>${e.channel === 'instagram' ? 'Instagram' : 'Podcast'}</td>
+      <td>${metricsStr}</td>
+      <td>${e.note || ''}</td>
+      <td><button class="del-btn" data-id="${e.id}">削除</button></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      deleteLogEntry(Number(btn.dataset.id));
+      refreshManualViews();
+    });
+  });
+}
+
+function refreshManualViews(){
+  renderIg();
+  renderPod();
+  renderLogTable();
+  renderFunnel();
+}
+
+function renderHp(days){
+  const el = document.getElementById('hpStats');
+  const metrics = HP_METRICS[days];
+  if (!metrics) {
+    el.innerHTML = '<div class="empty-note">このレンジのデータはまだありません。</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="stat-row"><span class="stat-label">セッション数</span><span class="stat-val">${fmt(metrics.sessions)}</span></div>
+    <div class="stat-row"><span class="stat-label">ユニーク訪問者数</span><span class="stat-val">${fmt(metrics.visitors)}</span></div>
+    <div class="stat-row"><span class="stat-label">フォーム送信数</span><span class="stat-val">${fmt(metrics.forms)}</span></div>
+    <div class="stat-row"><span class="stat-label">問い合わせクリック数</span><span class="stat-val">${fmt(metrics.contact)}</span></div>`;
+
+  const canvas = document.getElementById('hpChart');
+  const series = metrics.series || [];
+  const labels = series.map(v => v.date.slice(5));
+  const values = series.map(v => v.value);
+  if (hpChartObj) hpChartObj.destroy();
+  hpChartObj = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'セッション数', data: values, borderColor: '#8a5f45', backgroundColor: 'rgba(138,95,69,0.12)', fill: true, tension: 0.25, pointRadius: 0 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 8 } } } }
+  });
+}
+
+// ---------- Init ----------
+function init(){
+  document.getElementById('igForm').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const fd = new FormData(ev.target);
+    const metrics = { views: fd.get('views'), interactions: fd.get('interactions'), profile: fd.get('profile'), linktaps: fd.get('linktaps') };
+    addLogEntry('instagram', metrics, fd.get('note'));
+    ev.target.reset();
+    refreshManualViews();
+  });
+  document.getElementById('podForm').addEventListener('submit', (ev) => {
+    ev.preventDefault();
+    const fd = new FormData(ev.target);
+    addLogEntry('podcast', {}, fd.get('note'));
+    ev.target.reset();
+    refreshManualViews();
+  });
+  document.querySelectorAll('#hpToggle .toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#hpToggle .toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderHp(Number(btn.dataset.days));
+    });
+  });
+
+  renderIg();
+  renderPod();
+  renderPodEpisodes();
+  renderLogTable();
+  renderHp(30);
+  renderReels();
+  renderKPI();
+  renderFunnel();
+
+  document.getElementById('updatedAt').textContent = '最終取得: ' + formatDateTime(LAST_UPDATED) + '（1日1回自動更新）';
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
