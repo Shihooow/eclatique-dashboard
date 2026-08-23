@@ -22,7 +22,7 @@ const VISION_SHEET_ID = "1vdOZxV5vnD6mU8PYKmpRGWPqStR5N4gT-gvVy9Aey0M"; // 00_�
 const VISION_TAB = "visionsheet";
 const CLIENT_SHEET_ID = "1BaaSdB6w1jMw634SvydAZ0RT_PZSkE6cs7bJeXaR0TU"; // 00_既存顧客DB
 const CLIENT_TAB = "FBP申し込み";
-const NOTION_DATABASE_ID = "3b6f848e-722e-8083-99eb-000bdcbd1cd8"; // Reels
+const NOTION_DATABASE_ID = "3b6f848e-722e-8046-b916-ed969b425d68"; // Reels (database/page ID, not data-source ID)
 const INDEX_HTML_PATH = new URL("../index.html", import.meta.url);
 
 const EXCLUDE_EMAILS = new Set([
