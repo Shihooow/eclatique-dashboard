@@ -1,0 +1,43 @@
+name: Update dashboard
+
+on:
+  schedule:
+    # 毎日 21:00 UTC = 日本時間 翌6:00
+    - cron: "0 21 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run update script
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          WIX_API_KEY: ${{ secrets.WIX_API_KEY }}
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+        run: node scripts/update-dashboard.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "eclatique-dashboard-bot"
+          git config user.email "actions@github.com"
+          if git diff --quiet -- index.html; then
+            echo "No changes to index.html; skipping commit."
+          else
+            git add index.html
+            git commit -m "Data refresh (automated)"
+            git push
+          fi
