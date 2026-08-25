@@ -37,8 +37,9 @@
   .grid { display: grid; gap: 14px; }
   .grid-2 { grid-template-columns: repeat(2, 1fr); }
   .grid-3 { grid-template-columns: repeat(3, 1fr); }
-  @media (max-width: 980px) { .grid-3 { grid-template-columns: 1fr; } }
-  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 980px) { .grid-3 { grid-template-columns: 1fr; } .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } .grid-4 { grid-template-columns: 1fr; } }
   .card {
     background: var(--card);
     border: 1px solid var(--line);
@@ -90,7 +91,7 @@
   <div class="header">
     <div>
       <h1>Eclatique マーケティングダッシュボード</h1>
-      <div class="sub">Instagram ／ HPブログ(Wix) ／ Podcast ／ 無料診断 を横断で可視化</div>
+      <div class="sub">Instagram ／ Threads ／ HPブログ(Wix) ／ Podcast ／ 無料診断 を横断で可視化</div>
     </div>
     <div class="updated" id="updatedAt"></div>
   </div>
@@ -107,7 +108,14 @@
 
   <section>
     <h2>③ チャネル別詳細</h2>
-    <div class="grid grid-3">
+    <div class="grid grid-4">
+      <div class="card channel-card" id="threadsCard">
+        <h3>Threads <span class="tag manual">手動記録（週次）</span></h3>
+        <div id="threadsStats"></div>
+        <div class="chart-wrap"><canvas id="threadsChart"></canvas></div>
+        <div class="empty-note">フォロワー数・投稿別の再生数は、Threadsの「インサイト」画面（threads.com/insights）とプロフィールを週次でチェックして記録します。フォロワーが100人に達すると「概要」タブの追加指標（プロフィール閲覧数など）も見られるようになる見込みです。</div>
+      </div>
+
       <div class="card channel-card" id="igCard">
         <h3>Instagram <span class="tag">自動取得（週次）</span></h3>
         <div id="igStats"></div>
@@ -148,7 +156,21 @@
   </section>
 
   <section>
-    <h2>④ リール実績 <span class="tag">Notionから自動取得</span></h2>
+    <h2>④ Threads投稿実績 <span class="tag manual">Threadsインサイトから手動記録</span></h2>
+    <div class="card">
+      <div class="grid grid-3" id="threadsPostsSummary"></div>
+      <div class="table-scroll">
+        <table class="log-table" id="threadsPostsTable">
+          <thead><tr><th>投稿日</th><th>本文（抜粋）</th><th>再生数</th><th>いいね</th><th>返信</th><th>リポスト</th></tr></thead>
+          <tbody id="threadsPostsTbody"></tbody>
+        </table>
+      </div>
+      <div class="empty-note" id="threadsPostsEmpty" style="display:none;">まだ記録がありません。</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>⑤ Instagramリール実績 <span class="tag">Notionから自動取得</span></h2>
     <div class="card">
       <div class="grid grid-3" id="reelsSummary"></div>
       <div class="table-scroll">
@@ -162,7 +184,7 @@
   </section>
 
   <section>
-    <h2>⑤ Podcastエピソード実績 <span class="tag">Spotify for Creatorsから自動取得</span></h2>
+    <h2>⑥ Podcastエピソード実績 <span class="tag">Spotify for Creatorsから自動取得</span></h2>
     <div class="card">
       <div class="table-scroll">
         <table class="log-table" id="podEpisodesTable">
@@ -174,7 +196,7 @@
   </section>
 
   <section>
-    <h2>⑥ 手入力の記録一覧</h2>
+    <h2>⑦ 手入力の記録一覧</h2>
     <div class="card" id="logCardWrap">
       <div class="table-scroll">
         <table class="log-table" id="logTable">
@@ -192,6 +214,7 @@
     <p>・無料診断／成約数は Google Drive 内のスプレッドシート（00_未顧客DB・00_既存顧客DB）を自動集計しています。しほさん自身のテスト送信（お名前に「府川」を含む行、自己アドレスからの送信）は集計から除外しています。</p>
     <p>・Instagramのフォロワー数は @eclatique_shiho のプロフィールページを週次で自動チェックして記録しています。リール単位の再生回数・リーチ・平均視聴時間などは、Notionの「Reels」データベースに入力した数字を自動集計しています（数字自体はアプリの「インサイトを見る」を開いて確認し、Notion側で入力する必要があります）。プロフィール全体の閲覧数・インタラクションなどは自動連携ツールが未接続のため手入力です（手入力値はこのブラウザに保存され、別端末では引き継がれません）。</p>
     <p>・Podcast（今日のわたしになる前に）は Spotify for Creators を週次で自動チェックし、全期間の再生数・フォロワー数・エピソード別の再生数とオーディエンス数を記録しています。</p>
+    <p>・Threads（@eclatique_shiho）はプロフィールとインサイト画面（threads.com/insights）を週次でチェックし、フォロワー数と投稿別の再生数・いいね・返信・リポスト数を記録しています。フォロワーが100人未満の間は「概要」タブの集計指標（プロフィール閲覧数など）が使えないため、投稿単位の数字のみを記録しています。</p>
     <p>・このページはスマホなどブラウザからも見られるよう、①HPブログ ②無料診断・面談・成約 ③リール実績のデータを1日1回自動で取得し直し、静的なページとして再生成・公開しています（GitHub Pages）。Instagramフォロワー数・Podcastの全期間再生数は現時点では週次の別工程で更新されるまで前回値のままです。</p>
     <p>・年末目標（〜2026年12月末）：Instagramフォロワー500人／スタンダードプラン1件成約（¥300,000）</p>
   </div>
@@ -234,6 +257,23 @@ const IG_HISTORY = [
   { date: '2026-08-08', followers: 96, posts: 12, source: 'auto' }
 ];
 
+// Threads (@eclatique_shiho). Updated weekly via Claude in Chrome (manual browse of threads.com/insights + profile).
+const THREADS_HISTORY = [
+  { date: '2026-08-25', followers: 6, posts: 11, source: 'manual' }
+];
+const THREADS_POSTS = [
+  { post_date: '2026-08-25T19:13:00+09:00', text: '「似合う(正論)」と「好き(感情)」のずれにモヤモヤして検索してる人、本当は気付いてるんじゃない？納得してたらそもそも調べたりしないからさ。', plays: 166, likes: 0, replies: 0, reposts: 0 },
+  { post_date: '2026-08-19T20:17:00+09:00', text: '恋愛でもキャリアでも同じ。モヤモヤを引きずってる人は、決断していないんじゃなくて、決断した後の不都合を引き受けたくないだけ。', plays: 141, likes: 0, replies: 0, reposts: 0 },
+  { post_date: '2026-08-17T20:13:00+09:00', text: '「女はね、自分が出来なかったことをやった女が一番嫌いなんだよ」10年近く経っても覚えてる、某映画の台詞。', plays: 317, likes: 2, replies: 0, reposts: 0 },
+  { post_date: '2026-08-14T12:18:00+09:00', text: 'お盆休み。家族や友達に会う人、旅行する人、家でのんびりする人、いろんな人がいるはず。', plays: 326, likes: 1, replies: 0, reposts: 0 },
+  { post_date: '2026-08-12', text: '好きなことが近い人の方が友達になりやすいけど、許せないことが近い人の方が仕事はしやすい。友達と戦友は違うからね。', plays: 278, likes: 3, replies: 6, reposts: 1 },
+  { post_date: '2026-08-05', text: '可愛い、綺麗、格好いい。方向性は何でも良くて、結局あなたがどんな自分になりたいか？その先に何を叶えたいか？がいちばん大事。', plays: 170, likes: 0, replies: 0, reposts: 0 },
+  { post_date: '2026-08-02', text: '古巣コミュニティで担当してたエンジニアさん、わりと稼いでたのに辞めて利尻(北海道)で昆布職人になるらしい。最高か？？？', plays: 453, likes: 0, replies: 1, reposts: 0 },
+  { post_date: '2026-07-26', text: 'まだ20代半ばだった頃、一回り上の憧れの先輩に「しほちゃんはどうしたい？どうなりたい？」って毎度言われてて。', plays: 107, likes: 1, replies: 1, reposts: 0 },
+  { post_date: '2026-07-22', text: '「無性にイライラする、あの子ばっかりずるい！！」そう思うのは、あなたが本心では"その子"に憧れてるからだよ。', plays: 24, likes: 1, replies: 0, reposts: 0 },
+  { post_date: '2026-07-21', text: '自分の強みを見つけるよりも、他人と比較して「自分には足りないもの」を探す方が楽だし簡単だよ。', plays: 46, likes: 1, replies: 0, reposts: 0 }
+];
+
 // Auto-scraped Spotify for Creators data (「今日のわたしになる前に」). Updated weekly (separate process).
 const PODCAST_HISTORY = [
   { date: '2026-08-08', totalPlays: 97, followers: 0, source: 'auto' }
@@ -252,7 +292,7 @@ const PODCAST_EPISODES = [
 const LOG_KEY = 'eclatique_manual_log_v1';
 const YEAR_END_DEADLINE = new Date(2026, 11, 31); // 2026-12-31
 
-let hpChartObj = null, igChartObj = null, podChartObj = null;
+let hpChartObj = null, igChartObj = null, podChartObj = null, threadsChartObj = null;
 
 function fmt(n){ return (n===undefined||n===null||isNaN(n)) ? '–' : n.toLocaleString('ja-JP'); }
 
@@ -433,6 +473,78 @@ function renderPod(){
   }
 }
 
+function renderThreads(){
+  const el = document.getElementById('threadsStats');
+  const latest = THREADS_HISTORY.length ? THREADS_HISTORY[THREADS_HISTORY.length - 1] : null;
+  let html = '';
+  if (latest) {
+    html += `<div class="stat-row"><span class="stat-label">フォロワー数（手動・${latest.date}）</span><span class="stat-val">${fmt(latest.followers)}</span></div>`;
+    if (latest.posts !== undefined) {
+      html += `<div class="stat-row"><span class="stat-label">投稿数（累計）</span><span class="stat-val">${fmt(latest.posts)}</span></div>`;
+    }
+  } else {
+    html += '<div class="empty-note">まだ記録がありません。</div>';
+  }
+  el.innerHTML = html;
+
+  const canvas = document.getElementById('threadsChart');
+  if (THREADS_HISTORY.length < 2) {
+    canvas.style.display = 'none';
+    let note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (!note) {
+      note = document.createElement('div');
+      note.className = 'empty-note chart-empty-note';
+      note.textContent = '記録が2件以上たまるとフォロワー推移グラフが表示されます。';
+      canvas.parentElement.appendChild(note);
+    }
+  } else {
+    canvas.style.display = 'block';
+    const note = canvas.parentElement.querySelector('.chart-empty-note');
+    if (note) note.remove();
+    const labels = THREADS_HISTORY.map(e => e.date);
+    const values = THREADS_HISTORY.map(e => e.followers);
+    if (threadsChartObj) threadsChartObj.destroy();
+    threadsChartObj = new Chart(canvas, {
+      type: 'line',
+      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+    });
+  }
+}
+
+function renderThreadsPosts(){
+  const rows = THREADS_POSTS;
+  const summaryEl = document.getElementById('threadsPostsSummary');
+  const tbody = document.getElementById('threadsPostsTbody');
+  const emptyNote = document.getElementById('threadsPostsEmpty');
+
+  const totalPlays = rows.reduce((s, r) => s + Number(r.plays || 0), 0);
+  const totalLikes = rows.reduce((s, r) => s + Number(r.likes || 0), 0);
+
+  function miniCard(title, value){
+    return `<div class="card"><div class="kpi-title">${title}</div><div class="kpi-value" style="font-size:18px;">${value}</div></div>`;
+  }
+  summaryEl.innerHTML =
+    miniCard('投稿数（記録）', rows.length) +
+    miniCard('合計再生回数', rows.length ? fmt(totalPlays) : '未記録') +
+    miniCard('合計いいね', rows.length ? fmt(totalLikes) : '未記録');
+
+  if (!rows.length) {
+    tbody.innerHTML = '';
+    emptyNote.style.display = 'block';
+    return;
+  }
+  emptyNote.style.display = 'none';
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td>${formatReelDate(r.post_date)}</td>
+    <td>${(r.text || '').length > 40 ? r.text.slice(0, 40) + '…' : (r.text || '')}</td>
+    <td>${fmt(r.plays)}</td>
+    <td>${fmt(r.likes)}</td>
+    <td>${fmt(r.replies)}</td>
+    <td>${fmt(r.reposts)}</td>
+  </tr>`).join('');
+}
+
 function renderPodEpisodes(){
   const tbody = document.getElementById('podEpisodesTbody');
   tbody.innerHTML = PODCAST_EPISODES.map(e => `<tr>
@@ -572,6 +684,8 @@ function init(){
 
   renderIg();
   renderPod();
+  renderThreads();
+  renderThreadsPosts();
   renderPodEpisodes();
   renderLogTable();
   renderHp(30);
