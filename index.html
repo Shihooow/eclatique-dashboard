@@ -8,16 +8,16 @@
 <style>
   :root {
     color-scheme: light;
-    --bg: #fbf7f4;
+    --bg: #f7f4f2;
     --card: #ffffff;
-    --ink: #2c2320;
-    --sub: #7a6f68;
-    --line: #e9e0d9;
-    --accent: #b98a6a;
-    --accent-dark: #8a5f45;
-    --accent-soft: #f3e4d8;
-    --good: #7a8f6a;
-    --warn: #c0785a;
+    --ink: #2a2224;
+    --sub: #7a6d6f;
+    --line: #e6dadb;
+    --accent: #8f4a54;
+    --accent-dark: #5c2a32;
+    --accent-soft: #ecdcdd;
+    --good: #6f8a7a;
+    --warn: #a86a4a;
   }
   * { box-sizing: border-box; }
   body {
@@ -426,7 +426,7 @@ function renderIg(){
     if (igChartObj) igChartObj.destroy();
     igChartObj = new Chart(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#8f4a54', backgroundColor: 'rgba(143,74,84,0.15)', fill: true, tension: 0.3 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
   }
@@ -469,7 +469,7 @@ function renderPod(){
     if (podChartObj) podChartObj.destroy();
     podChartObj = new Chart(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ label: '全期間 再生数・DL数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      data: { labels, datasets: [{ label: '全期間 再生数・DL数', data: values, borderColor: '#8f4a54', backgroundColor: 'rgba(143,74,84,0.15)', fill: true, tension: 0.3 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
   }
@@ -511,7 +511,7 @@ function renderThreads(){
     if (threadsChartObj) threadsChartObj.destroy();
     threadsChartObj = new Chart(canvas, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#b98a6a', backgroundColor: 'rgba(185,138,106,0.15)', fill: true, tension: 0.3 }] },
+      data: { labels, datasets: [{ label: 'フォロワー数', data: values, borderColor: '#8f4a54', backgroundColor: 'rgba(143,74,84,0.15)', fill: true, tension: 0.3 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
   }
@@ -657,7 +657,7 @@ function renderHp(days){
   if (hpChartObj) hpChartObj.destroy();
   hpChartObj = new Chart(canvas, {
     type: 'line',
-    data: { labels, datasets: [{ label: 'セッション数', data: values, borderColor: '#8a5f45', backgroundColor: 'rgba(138,95,69,0.12)', fill: true, tension: 0.25, pointRadius: 0 }] },
+    data: { labels, datasets: [{ label: 'セッション数', data: values, borderColor: '#5c2a32', backgroundColor: 'rgba(92,42,50,0.12)', fill: true, tension: 0.25, pointRadius: 0 }] },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { ticks: { maxTicksLimit: 8 } } } }
   });
 }
