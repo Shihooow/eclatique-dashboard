@@ -110,14 +110,14 @@
     <h2>③ チャネル別詳細</h2>
     <div class="grid grid-4">
       <div class="card channel-card" id="threadsCard">
-        <h3>Threads <span class="tag manual">手動記録（週次）</span></h3>
+        <h3>Threads <span class="tag manual">手動更新（週次：Chrome経由）</span></h3>
         <div id="threadsStats"></div>
         <div class="chart-wrap"><canvas id="threadsChart"></canvas></div>
         <div class="empty-note">フォロワー数・投稿数・最近の閲覧数、投稿別の再生数などは、毎週土曜日にしほさんがプロフィールページ（threads.com/@eclatique_shiho）とインサイト画面（threads.com/insights）を見ながら手動で記録します（SNS戦略を立てるタイミングに合わせて更新）。フォロワーが100人に達すると「概要」タブの追加指標も見られるようになる見込みです。</div>
       </div>
 
       <div class="card channel-card" id="igCard">
-        <h3>Instagram <span class="tag manual">手動記録（週次）</span></h3>
+        <h3>Instagram <span class="tag manual">手動記録（週次：手入力）</span></h3>
         <div id="igStats"></div>
         <div class="chart-wrap"><canvas id="igChart"></canvas></div>
         <div class="empty-note">フォロワー数は、毎週土曜日にしほさんが @eclatique_shiho のプロフィールを見ながら手動で記録します（SNS戦略を立てるタイミングに合わせて更新）。リール単位の再生回数などはNotionの「Reels」データベースから自動取得します（下のセクション参照）。ここではインサイトの「概要」画面（7日間）に出ている数字をそのまま入力してください。</div>
@@ -143,7 +143,7 @@
       </div>
 
       <div class="card channel-card" id="podCard">
-        <h3>Podcast <span class="tag">自動取得（週次）</span></h3>
+        <h3>Podcast <span class="tag manual">手動更新（週次：Chrome経由）</span></h3>
         <div id="podStats"></div>
         <div class="chart-wrap"><canvas id="podChart"></canvas></div>
         <div class="empty-note">Spotify for Creators（今日のわたしになる前に）を週次で自動チェックして記録します。エピソード単位の内訳は下のセクション参照。ここでは気づき・エンゲージメントのメモだけ残してください。</div>
@@ -156,7 +156,7 @@
   </section>
 
   <section>
-    <h2>④ Threads投稿実績 <span class="tag manual">Threadsインサイトから手動記録</span></h2>
+    <h2>④ Threads投稿実績 <span class="tag manual">Threadsインサイトから手動更新（Chrome経由）</span></h2>
     <div class="card">
       <div class="grid grid-3" id="threadsPostsSummary"></div>
       <div class="table-scroll">
@@ -184,7 +184,7 @@
   </section>
 
   <section>
-    <h2>⑥ Podcastエピソード実績 <span class="tag">Spotify for Creatorsから自動取得</span></h2>
+    <h2>⑥ Podcastエピソード実績 <span class="tag manual">Spotify for Creatorsから手動更新（Chrome経由）</span></h2>
     <div class="card">
       <div class="table-scroll">
         <table class="log-table" id="podEpisodesTable">
@@ -213,9 +213,9 @@
     <p>・HPブログの数値は Wix Analytics API から自動取得しています。「ユニーク訪問者数」は同じ人が期間内に何度訪れても1人として数える重複なしの人数、「セッション数」は訪問（滞在）の回数そのもの（同じ人が複数回来れば複数カウント）です。Wix側の仕様上、直近62日分のみ保持されます。</p>
     <p>・無料診断／成約数は Google Drive 内のスプレッドシート（00_未顧客DB・00_既存顧客DB）を自動集計しています。しほさん自身のテスト送信（お名前に「府川」を含む行、自己アドレスからの送信）は集計から除外しています。</p>
     <p>・Instagramのフォロワー数は、毎週土曜日にしほさんが @eclatique_shiho のプロフィールページを見ながら手動で記録しています。リール単位の再生回数・リーチ・平均視聴時間などは、Notionの「Reels」データベースに入力した数字を自動集計しています（数字自体はアプリの「インサイトを見る」を開いて確認し、Notion側で入力する必要があります）。プロフィール全体の閲覧数・インタラクションなどは自動連携ツールが未接続のため手入力です（手入力値はこのブラウザに保存され、別端末では引き継がれません）。</p>
-    <p>・Podcast（今日のわたしになる前に）は Spotify for Creators を週次で自動チェックし、全期間の再生数・フォロワー数・エピソード別の再生数とオーディエンス数を記録しています。</p>
+    <p>・Podcast（今日のわたしになる前に）は、毎週土曜日にしほさんが Spotify for Creators の画面（Chrome経由）を見ながら、全期間の再生数・フォロワー数・エピソード別の再生数とオーディエンス数を手動で記録しています。</p>
     <p>・Threads（@eclatique_shiho）は、毎週土曜日にしほさんがプロフィールページ（threads.com/@eclatique_shiho）とインサイト画面（threads.com/insights）を見ながら手動で記録しています（SNS戦略を立てるタイミングに合わせて更新）。フォロワー数・投稿数・最近の閲覧数はプロフィールページから、投稿別の再生数・いいね・返信・リポスト数はインサイト画面から取得しています。フォロワーが100人未満の間は「概要」タブの集計指標（プロフィール閲覧者数など）が使えないため、この2箇所からの数字のみを記録しています。</p>
-    <p>・このページはスマホなどブラウザからも見られるよう、①HPブログ ②無料診断・面談・成約 ③リール実績のデータを1日1回自動で取得し直し、静的なページとして再生成・公開しています（GitHub Pages）。Instagramフォロワー数・Podcastの全期間再生数は現時点では週次の別工程で更新されるまで前回値のままです。</p>
+    <p>・このページはスマホなどブラウザからも見られるよう、①HPブログ ②無料診断・面談・成約 ③リール実績のデータを1日1回自動で取得し直し、静的なページとして再生成・公開しています（GitHub Pages）。Instagram・Threads・Podcastの数値は、毎週土曜日にしほさんが手動更新（Instagramは手入力、Threads・Podcastは各サービスの画面をChrome経由で見ながら記録）するまで前回値のままです。</p>
     <p>・年末目標（〜2026年12月末）：Instagramフォロワー500人／スタンダードプラン1件成約（¥300,000）</p>
   </div>
 
@@ -361,7 +361,7 @@ function renderFunnel(){
   const igFollowers = IG_HISTORY.length ? IG_HISTORY[IG_HISTORY.length - 1].followers : 0;
   const hpVisitors = HP_METRICS[30] ? HP_METRICS[30].visitors : 0;
   const steps = [
-    { label: '認知（Instagram）', value: igFollowers, sub: 'フォロワー数・自動取得' },
+    { label: '認知（Instagram）', value: igFollowers, sub: 'フォロワー数・手動記録' },
     { label: 'HPブログ流入', value: hpVisitors, sub: '直近30日ユニーク訪問者' },
     { label: '無料診断提出', value: vs.newCycleSubmissions, sub: '2026/5〜・テスト除く' },
     { label: '個別面談実施', value: vs.meetingsHeld, sub: '' },
