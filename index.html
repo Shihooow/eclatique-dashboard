@@ -110,10 +110,10 @@
     <h2>③ チャネル別詳細</h2>
     <div class="grid grid-4">
       <div class="card channel-card" id="threadsCard">
-        <h3>Threads <span class="tag manual">手動記録（週次）</span></h3>
+        <h3>Threads <span class="tag">自動取得（週次）</span></h3>
         <div id="threadsStats"></div>
         <div class="chart-wrap"><canvas id="threadsChart"></canvas></div>
-        <div class="empty-note">フォロワー数・投稿別の再生数は、Threadsの「インサイト」画面（threads.com/insights）とプロフィールを週次でチェックして記録します。フォロワーが100人に達すると「概要」タブの追加指標（プロフィール閲覧数など）も見られるようになる見込みです。</div>
+        <div class="empty-note">フォロワー数・投稿数・最近の閲覧数は、@eclatique_shiho のプロフィールページ（threads.com/@eclatique_shiho）を週次で自動チェックして記録します。投稿別の再生数などはNotionと同様にインサイト画面から取得します（下のセクション参照）。フォロワーが100人に達すると「概要」タブの追加指標も見られるようになる見込みです。</div>
       </div>
 
       <div class="card channel-card" id="igCard">
@@ -156,7 +156,7 @@
   </section>
 
   <section>
-    <h2>④ Threads投稿実績 <span class="tag manual">Threadsインサイトから手動記録</span></h2>
+    <h2>④ Threads投稿実績 <span class="tag">Threadsインサイトから自動取得</span></h2>
     <div class="card">
       <div class="grid grid-3" id="threadsPostsSummary"></div>
       <div class="table-scroll">
@@ -214,7 +214,7 @@
     <p>・無料診断／成約数は Google Drive 内のスプレッドシート（00_未顧客DB・00_既存顧客DB）を自動集計しています。しほさん自身のテスト送信（お名前に「府川」を含む行、自己アドレスからの送信）は集計から除外しています。</p>
     <p>・Instagramのフォロワー数は @eclatique_shiho のプロフィールページを週次で自動チェックして記録しています。リール単位の再生回数・リーチ・平均視聴時間などは、Notionの「Reels」データベースに入力した数字を自動集計しています（数字自体はアプリの「インサイトを見る」を開いて確認し、Notion側で入力する必要があります）。プロフィール全体の閲覧数・インタラクションなどは自動連携ツールが未接続のため手入力です（手入力値はこのブラウザに保存され、別端末では引き継がれません）。</p>
     <p>・Podcast（今日のわたしになる前に）は Spotify for Creators を週次で自動チェックし、全期間の再生数・フォロワー数・エピソード別の再生数とオーディエンス数を記録しています。</p>
-    <p>・Threads（@eclatique_shiho）はプロフィールとインサイト画面（threads.com/insights）を週次でチェックし、フォロワー数と投稿別の再生数・いいね・返信・リポスト数を記録しています。フォロワーが100人未満の間は「概要」タブの集計指標（プロフィール閲覧数など）が使えないため、投稿単位の数字のみを記録しています。</p>
+    <p>・Threads（@eclatique_shiho）はプロフィールページ（threads.com/@eclatique_shiho）とインサイト画面（threads.com/insights）を週次で自動チェックしています。フォロワー数・投稿数・最近の閲覧数はプロフィールページから、投稿別の再生数・いいね・返信・リポスト数はインサイト画面から取得しています。フォロワーが100人未満の間は「概要」タブの集計指標（プロフィール閲覧者数など）が使えないため、この2箇所からの数字のみを記録しています。</p>
     <p>・このページはスマホなどブラウザからも見られるよう、①HPブログ ②無料診断・面談・成約 ③リール実績のデータを1日1回自動で取得し直し、静的なページとして再生成・公開しています（GitHub Pages）。Instagramフォロワー数・Podcastの全期間再生数は現時点では週次の別工程で更新されるまで前回値のままです。</p>
     <p>・年末目標（〜2026年12月末）：Instagramフォロワー500人／スタンダードプラン1件成約（¥300,000）</p>
   </div>
@@ -257,9 +257,11 @@ const IG_HISTORY = [
   { date: '2026-08-08', followers: 96, posts: 12, source: 'auto' }
 ];
 
-// Threads (@eclatique_shiho). Updated weekly via Claude in Chrome (manual browse of threads.com/insights + profile).
+// Threads (@eclatique_shiho). followers/posts/views are auto-scraped weekly via Claude in Chrome
+// from the profile page https://www.threads.com/@eclatique_shiho ("フォロワーX人・最近の閲覧数Y回").
+// THREADS_POSTS (below) is scraped separately from https://www.threads.com/insights.
 const THREADS_HISTORY = [
-  { date: '2026-08-25', followers: 6, posts: 11, source: 'manual' }
+  { date: '2026-08-25', followers: 6, posts: 10, views: 1937, source: 'auto' }
 ];
 const THREADS_POSTS = [
   { post_date: '2026-08-25T19:13:00+09:00', text: '「似合う(正論)」と「好き(感情)」のずれにモヤモヤして検索してる人、本当は気付いてるんじゃない？納得してたらそもそも調べたりしないからさ。', plays: 166, likes: 0, replies: 0, reposts: 0 },
@@ -478,9 +480,12 @@ function renderThreads(){
   const latest = THREADS_HISTORY.length ? THREADS_HISTORY[THREADS_HISTORY.length - 1] : null;
   let html = '';
   if (latest) {
-    html += `<div class="stat-row"><span class="stat-label">フォロワー数（手動・${latest.date}）</span><span class="stat-val">${fmt(latest.followers)}</span></div>`;
+    html += `<div class="stat-row"><span class="stat-label">フォロワー数（自動・${latest.date}）</span><span class="stat-val">${fmt(latest.followers)}</span></div>`;
     if (latest.posts !== undefined) {
       html += `<div class="stat-row"><span class="stat-label">投稿数（累計）</span><span class="stat-val">${fmt(latest.posts)}</span></div>`;
+    }
+    if (latest.views !== undefined) {
+      html += `<div class="stat-row"><span class="stat-label">最近の閲覧数</span><span class="stat-val">${fmt(latest.views)}</span></div>`;
     }
   } else {
     html += '<div class="empty-note">まだ記録がありません。</div>';
